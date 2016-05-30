@@ -1,0 +1,260 @@
+<!--
+     @license
+     Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+     This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+     The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+     The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+     Code distributed by Google as part of the polymer project is also
+     subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+   -->
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/paper-input/paper-textarea.html">
+<link rel="import" href="../bower_components/paper-fab/paper-fab.html">
+<link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../bower_components/paper-spinner/paper-spinner-lite.html">
+
+<link rel="import" href="../bower_components/neon-animation/neon-shared-element-animatable-behavior.html">
+<link rel="import" href="../bower_components/neon-animation/animations/scale-up-animation.html">
+<link rel="import" href="../bower_components/neon-animation/animations/fade-out-animation.html">
+<link rel="import" href="../bower_components/neon-animation/animations/ripple-animation.html">
+<link rel="import" href="../bower_components/neon-animation/animations/reverse-ripple-animation.html">
+
+<link rel="import" href="../bower_components/app-layout/app-toolbar/app-toolbar.html">
+<link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../bower_components/re-captcha/re-captcha.html">
+
+
+
+<dom-module id="cv-contact">
+    <template>
+
+        <style>
+         :host {
+             display: block;
+         }
+         paper-fab {
+             position: absolute;
+             bottom: -32px;
+             right: 24px;
+         }
+
+         .with-fab {
+             padding-bottom: 64px;
+         }
+
+         .g-recaptcha {
+             margin-top: 16px;
+         }
+
+         .header {
+             height: 40%;
+             background: #fac800;
+         }
+        </style>
+
+        <div id="header" class="header"></div>
+
+            <neon-animated-pages id="contact" attr-for-selected="data-route" selected="{{route}}" entry-animation="slide-from-right-animation" exit-animation="slide-left-animation">
+                <neon-animatable data-route="form" tabindex="-1">
+                    <div class="content">
+                        <paper-material id="form" class="with-fab">
+                            <p>If you've found an error, would like to suggest a feature or just want to say hi.</p>
+                            <form>
+                                <paper-input id="name" label="Name" type="text" auto-validate required error-message="Your name is required" value="{{name}}"></paper-input>
+                                <paper-input id="email" label="Email" type="email" allowedPattern="[a-zA-z0-9\.-]+@[a-zA-Z0-9-]+" auto-validate required error-message="A valid email is required" value="{{email}}"></paper-input>
+                                <paper-textarea id="message" label="Message" required="true" error-message="Don't forget to say something!" maxlength="1000" value="{{message}}"></paper-textarea>
+
+                                <re-captcha id="recaptcha" class="g-recaptcha" sitekey="6LdFTh0TAAAAAAr-BQ0dJfe4r5_MHNKY8hO5Hn1u" response="{{grecaptcha}}"></re-captcha>
+                            </form>
+                            <paper-fab id="send" icon="send"></paper-fab>
+                        </paper-material>
+                    </div>
+                </neon-animatable>
+
+                <neon-animatable data-route="sending" tabindex="-1">
+                    <div class="content">
+                        <paper-material class="layout vertical center">
+
+                            <paper-spinner-lite alt="Empty alt" active></paper-spinner-lite>
+                            <div>Sending Message</div>
+                        </paper-material>
+                    </div>
+                </neon-animatable>
+                <neon-animatable data-route="sent" tabindex="-1">
+                    <div class="content">
+                        <paper-material class="with-fab">
+                            <div>Message sent. Thank you for getting in touch.</div>
+                            <paper-fab id="done" icon="done"></paper-fab>
+                        </paper-material>
+                    </div>
+                </neon-animatable>
+            </neon-animated-pages>
+
+
+
+
+            <iron-ajax id="sendmail"
+                       url="https://ttt-chicken.appspot.com/mail/cfl"
+                       method="POST"
+                       contentType="application/x-www-form-urlencoded"
+                       body="name=[[name]]&email=[[email]]&message=[[message]]&g-recaptcha-response=[[grecaptcha]]"
+                       verbose
+            ></iron-ajax>
+
+    </template>
+    <script>
+     (function() {
+         'use strict';
+
+         Polymer({
+             is: 'cv-contact',
+
+             behaviors: [
+                 Polymer.NeonSharedElementAnimatableBehavior
+             ],
+
+             listeners: {
+                 'send.tap': 'validateMessage',
+                 'sendmail.response': 'processResponse',
+                 'recaptcha.captcha-response': 'forceFocus',
+                 'done.tap': 'showForm'
+             },
+
+             properties: {
+                 sharedElements: {
+                     value: function() {
+                         return {
+                             'hero': this.$.header
+                         }
+                     }
+                 },
+
+                 animationConfig: {
+                     value: function() {
+                         var contact = this.$.contact;
+                         return {
+                             'entry': [{
+                                 name: 'hero-animation',
+                                 id: 'hero',
+                                 toPage: this
+                             },
+                                       {
+                                           name: 'cascaded-animation',
+                                           animation: 'transform-animation',
+                                           transformFrom: 'translateY(100%)',
+                                           nodes: contact
+                                       }],
+                             'exit': [{
+                                 name: 'slide-up-animation',
+                                 node: this.$.header
+                           }, {
+                                 name: 'cascaded-animation',
+                                 animation: 'transform-animation',
+                                 transformTo: 'translateY(60vh)',
+                                 nodes: [contact]
+
+                             }]
+                         };
+                     }
+                 },
+                 email: {
+                     type: String,
+                     notify: true
+                 },
+
+                 name: {
+                     type: String,
+                     notify: true
+                 },
+
+                 message: {
+                     type: String,
+                     notify: true
+                 },
+
+                 grecaptcha: {
+                     type: String,
+                     notify: true
+                 },
+
+                 route: {
+                     type: String,
+                     value: 'form',
+                     notify: true
+                 }
+
+             },
+
+             _markErrors: function() {
+                 if (!this.name) {
+                     this.$.name.invalid = true;
+                 }
+
+                 if (!this.email) {
+                     this.$.email.invalid = true;
+                 }
+
+                 if (!this.message) {
+                     this.$.message.invalid = true;
+                 }
+
+             },
+
+             validateMessage: function() {
+                 this.forceFocus();
+
+                 if (!this.grecaptcha
+                  || !this.name
+                  || !this.email
+                  || !this.message) {
+
+                      this._markErrors();
+
+                      return;
+                 }
+
+                 this.route = 'sending';
+                 this.$.sendmail.generateRequest();
+
+             },
+
+             processResponse: function() {
+                 this.route = 'sent';
+                 this.resetForm();
+             },
+
+             showForm: function() {
+                 this.route = 'form';
+             },
+
+             resetForm: function() {
+                 this.$.name.autoValidate = false;
+                 this.$.email.autoValidate = false;
+
+                 this.name = '';
+                 this.email = '';
+                 this.message = '';
+                 this.grecaptcha = '';
+
+                 this.$.name.autoValidate = true;
+                 this.$.email.autoValidate = true;
+
+                 this.$.recaptcha.reset();
+             },
+
+             focusRecaptcha: function() {
+                 this.$.recaptcha.focus();
+             },
+
+             forceFocus: function() {
+                 this.$.name.querySelector('input').blur();
+                 this.$.email.querySelector('input').blur();
+                 this.$.message.querySelector('textarea').blur();
+             }
+
+         });
+     })();
+    </script>
+</dom-module>

@@ -1,0 +1,325 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../bower_components/iron-selector/iron-selector.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
+
+<link rel="import" href="../bower_components/neon-animation/neon-shared-element-animatable-behavior.html">
+
+<dom-module id="cv-nav">
+  <template>
+    <style>
+     .title {
+         opacity: 0;
+         transition: opacity 2s;
+     }
+
+     .loading {
+         text-align: center;
+         font-family: 'Orbitron', sans-serif;
+         font-size: 32px;
+         margin-top: 64px;
+         margin-bottom: 0;
+         transition: opacity 1s;
+         font-weight: 400;
+     }
+
+     .initials {
+         text-align: center;
+         margin-top: -80px;
+         margin-bottom: 0;
+         font-family: 'Orbitron', sans-serif;
+         font-size: 48px;
+         font-weight: 400;
+     }
+
+     .show {
+         opacity: 1;
+     }
+
+     .fade {
+         opacity: 0;
+         transition-delay: 2s;
+     }
+
+     .circle {
+         box-sizing: border-box;
+         opacity: 0.75;
+         width: 33px;
+         height: 33px;
+         border-radius: 50%;
+         transition: opacity 1s, transform 1s;
+     }
+
+     .circle::after {
+         content: '';
+         position: absoulte;
+         z-index: -1;
+         width: 100%;
+         height: 100%;
+         border-radius: 50%;
+         opacity: 0;
+         display: none;
+         xbox-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+         box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2);
+         transition: opacity 1s;
+     }
+
+     .pos-orbit {
+         transform: rotateZ(360deg) translateY(-33%);
+         transform-origin: 50% -50px -50px;
+     }
+
+     .full-north {
+         transform: translateY(-150px);
+     }
+
+     .full-west {
+         transform: translateX(-150px);
+     }
+
+     .full-east {
+         transform: translateX(150px);
+     }
+
+     .large-opaque-lift-north {
+         opacity: 1;
+         transform: scale(2) translateY(-150px);
+         transform-origin: 50% -125px;
+         transition-delay: 0.25s;
+     }
+
+     .large-opaque-lift-west {
+         opacity: 1;
+         transform: scale(2) translateX(-150px);
+         transform-origin: -125px 50%;
+     }
+
+     .large-opaque-lift-east {
+         opacity: 1;
+         transform: scale(2) translateX(140px);
+         transform-origin: 150px 50%;
+         transition-delay: 0.5s;
+     }
+
+     .lift-north::after {
+         opacity: 1;
+         display: block;
+         transition-delay: 0.25s;
+     }
+
+     .lift-west::after {
+         opacity: 1;
+         display: block;
+     }
+
+     .large-opaque-lift-east::after {
+         opacity: 1;
+         display: block;
+         transition-delay: 1s;
+     }
+
+     .blue {
+         background-color: #0064ff;
+         margin-bottom: -33px;
+     }
+
+     .yellow {
+         background-color: #fac800;
+     }
+
+     .red {
+         background-color: #ff3232;
+         margin-top: -33px;
+     }
+
+     .full {
+         display: flex;
+         flex-direction: column;
+         align-items: center;
+         justify-content: center;
+         position: absolute;
+         background-color: white;
+         top: 0;
+         right: 0;
+         left: 0;
+         bottom: 0;
+     }
+
+    </style>
+
+
+    <div id="circleContainer" class="full">
+        <iron-selector selected="[[page]]" attr-for-selected="name" class="drawer-list" role="navigation">
+            <a href="/bio" name="bio"><div id="blue" class="circle blue"></div></a>
+            <a href="/contact" name="contact"><div id="yellow" class="circle yellow"></div></a>
+            <a href="/tech" name="tech"><div id="red" class="circle red" name="tech"></div></a>
+        </iron-selector>
+
+        <h1 id="initials" class="title initials">A.B-W</h1>
+        <h1 id="loading" class="title loading">Loading</h1>
+    </div>
+
+
+  </template>
+  <script>
+  (function() {
+    'use strict';
+
+    Polymer({
+      is: 'cv-nav',
+
+        attached: function() {
+
+            /* var fonts = [
+               {family: "'Lobster Two', cursive", weight: "400", size: "48px"},
+               {family: "'Russo One', sans-serif", weight: "400", size: "48px"},
+               {family: "'Courgette', cursive", weight: "400", size: "48px"},
+               {family: "'Rock Salt', cursive", weight: "400", size: "48px"},
+               {family: "'Special Elite', cursive", weight: "400", size:"48px"},
+               {family: "'Ceviche One', cursive", weight: "400", size: "48px"},
+               {family: "'Alex Brush', cursive", weight: "400", size: "48px"},
+               {family: "'Press Start 2P', cursive", weight: "400", size: "48px"},
+               {family: "'Cabin Sketch', cursive", weight: "400", size: "48px"},
+               {family: "'Orbitron', sans-serif", weight: "400", size: "48px"}
+               ];
+             */
+
+            this.listen(this.$.red, 'transitionend', 'liftEnlargeOpaque');
+
+
+            this.async(function() {
+                //this.transform('translateY(-150px)', this.$.red);
+                this.toggleClass('full-north', true, this.$.red);
+                this.toggleClass('full-west', true, this.$.blue);
+                this.toggleClass('full-east', true, this.$.yellow);
+            },200);
+
+
+            var i = 0;
+
+        },
+
+        behaviors: [
+            Polymer.NeonSharedElementAnimatableBehavior
+        ],
+
+
+        properties: {
+
+            animationConfig: {
+                value: function() {
+                    var circles = Polymer.dom(this.root).querySelectorAll('.circle');
+                    var circlesArray = Array.prototype.slice.call(circles);
+
+                    return {
+                        'entry': [{
+                            name: 'cascaded-animation',
+                            animation: 'scale-up-animation',
+                            nodes: circlesArray
+                        }],
+
+                        'exit': [{
+                            name: 'hero-animation',
+                            id: 'hero',
+                            fromPage: this
+                        }, {
+                            name: 'cascaded-animation',
+                            animation: 'scale-down-animation'
+                        }]
+                    }
+                }
+            },
+
+            fonts: {
+                type: Array,
+                value: [
+                    {family: "'Orbitron', sans-serif", weight: "400", size: "48px"}
+                ]
+
+            },
+
+            page: {
+                type: String,
+                notify: true
+            }
+        },
+
+        listeners: {
+            'click': '_onClick'
+        },
+
+        _onClick: function(event) {
+            var target = event.target;
+            if(target.classList.contains('circle')) {
+                // configure the page animation
+                this.sharedElements = {
+                    'hero': target
+                };
+            }
+
+            var nodesToScale = [];
+            var circles = Polymer.dom(this.root).querySelectorAll('.circle');
+            for (var node, index = 0; node = circles[index]; index++) {
+                if (node !== event.target) {
+                    nodesToScale.push(node);
+                }
+
+            }
+
+            this.animationConfig['exit'][1].nodes = nodesToScale;
+            console.log(this.animationConfig);
+            this.fire('circle-click');
+        },
+
+        liftEnlargeOpaque: function (e) {
+            this.unlisten(this.$.red, 'transitionend', 'liftEnlargeOpaque');
+            this.listen(this.$.red, 'transitionend', 'changeFont');
+
+            this.toggleClass('large-opaque-lift-north',true, this.$.red);
+            this.toggleClass('lift-north', true, this.$.red);
+
+            this.toggleClass('large-opaque-lift-west', true, this.$.blue);
+            this.toggleClass('lift-west', true, this.$.blue);
+
+            this.toggleClass('large-opaque-lift-east', true, this.$.yellow);
+            this.toggleClass('lift-east', true, this.$.yellow);
+        },
+
+        changeFont: function (e) {
+
+
+            if (e.propertyName !== 'opacity') return;
+
+            this.unlisten(this.$.red, 'transitionend', 'changeFont');
+            //title.addEventListener("transitionend", changeFont, true);
+
+            if (this.$.initials.classList.contains('show')) {
+                this.toggleClass('fade', true, this.$.initials);
+                this.toggleClass('show', false, this.$.initials);
+
+
+            } else {
+
+                this.$.initials.style["fontFamily"] = this.fonts[0].family;
+                this.$.initials.style["fontWeight"] = this.fonts[0].weight;
+                this.$.initials.style["fontSize"] = this.fonts[0].size;
+
+
+                this.toggleClass('fade', false, this.$.initials);
+                this.toggleClass('show', true, this.$.initials);
+            }
+
+        }
+
+    });
+  })();
+  </script>
+</dom-module>

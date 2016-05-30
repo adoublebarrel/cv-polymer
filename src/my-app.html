@@ -19,7 +19,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../bower_components/iron-pages/iron-pages.html">
 <link rel="import" href="../bower_components/iron-selector/iron-selector.html">
+
+
 <link rel="import" href="my-icons.html">
+
 
 <dom-module id="my-app">
 
@@ -111,27 +114,27 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       properties: {
 
-        page: {
-          type: String,
-          reflectToAttribute: true,
-          observer: '_pageChanged'
+          page: {
+              type: String,
+              reflectToAttribute: true,
+              observer: '_pageChanged'
+          },
+
+      },
+
+        observers: [
+            '_routePageChanged(routeData.page)'
+        ],
+
+        _routePageChanged: function(page) {
+            this.page = page || 'view1';
         },
 
-      },
-
-      observers: [
-        '_routePageChanged(routeData.page)'
-      ],
-
-      _routePageChanged: function(page) {
-        this.page = page || 'view1';
-      },
-
-      _pageChanged: function(page) {
-        // load page import on demand.
-        this.importHref(
-          this.resolveUrl('my-' + page + '.html'), null, null, true);
-      }
+        _pageChanged: function(page) {
+            // load page import on demand.
+            this.importHref(
+                this.resolveUrl('my-' + page + '.html'), null, null, true);
+        }
 
     });
 
