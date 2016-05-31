@@ -56,6 +56,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     Polymer({
       is: 'cv-home',
+        attached: function() {
+            this.importHref(this.resolveUrl('cv-contact.html'), null, null, true);
+        },
 
         properties: {
             page: {

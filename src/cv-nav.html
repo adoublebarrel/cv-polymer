@@ -10,6 +10,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 <link rel="import" href="../bower_components/iron-selector/iron-selector.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../bower_components/iron-icons/hardware-icons.html">
+<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+
+<link rel="import" href="../bower_components/paper-fab/paper-fab.html">
 
 <link rel="import" href="../bower_components/neon-animation/neon-shared-element-animatable-behavior.html">
 
@@ -54,11 +58,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
          opacity: 0.75;
          width: 33px;
          height: 33px;
-         border-radius: 50%;
+
          transition: opacity 1s, transform 1s;
      }
 
-     .circle::after {
+     .xcircle::after {
          content: '';
          position: absoulte;
          z-index: -1;
@@ -67,7 +71,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
          border-radius: 50%;
          opacity: 0;
          display: none;
-         xbox-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
          box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2);
          transition: opacity 1s;
      }
@@ -86,41 +89,30 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
      }
 
      .full-east {
-         transform: translateX(150px);
+         transform: translateX(135px);
      }
 
      .large-opaque-lift-north {
          opacity: 1;
-         transform: scale(2) translateY(-150px);
+         transform: scale(1.75) translateY(-150px);
          transform-origin: 50% -125px;
          transition-delay: 0.25s;
      }
 
      .large-opaque-lift-west {
          opacity: 1;
-         transform: scale(2) translateX(-150px);
+         transform: scale(1.75) translateX(-150px);
          transform-origin: -125px 50%;
      }
 
      .large-opaque-lift-east {
          opacity: 1;
-         transform: scale(2) translateX(140px);
-         transform-origin: 150px 50%;
+         transform: scale(1.75) translateX(135px);
+         transform-origin: 135px 50%;
          transition-delay: 0.5s;
      }
 
-     .lift-north::after {
-         opacity: 1;
-         display: block;
-         transition-delay: 0.25s;
-     }
-
-     .lift-west::after {
-         opacity: 1;
-         display: block;
-     }
-
-     .large-opaque-lift-east::after {
+     .xlarge-opaque-lift-east::after {
          opacity: 1;
          display: block;
          transition-delay: 1s;
@@ -158,9 +150,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     <div id="circleContainer" class="full">
         <iron-selector selected="[[page]]" attr-for-selected="name" class="drawer-list" role="navigation">
-            <a href="/bio" name="bio"><div id="blue" class="circle blue"></div></a>
-            <a href="/contact" name="contact"><div id="yellow" class="circle yellow"></div></a>
-            <a href="/tech" name="tech"><div id="red" class="circle red" name="tech"></div></a>
+            <a href="/bio" name="bio"><paper-fab icon="face" title="Biography" class="circle blue" id="blue"></paper-fab></a>
+            <a href="/contact" name="contact"><paper-fab icon="mail" title="contact" id="yellow" class="circle yellow"></paper-fab></a>
+            <a href="/tech" name="tech"><paper-fab icon="hardware:computer" id="red" class="circle red"></paper-fab></a>
         </iron-selector>
 
         <h1 id="initials" class="title initials">A.B-W</h1>
@@ -216,23 +208,24 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
             animationConfig: {
                 value: function() {
-                    var circles = Polymer.dom(this.root).querySelectorAll('.circle');
-                    var circlesArray = Array.prototype.slice.call(circles);
-
                     return {
                         'entry': [{
-                            name: 'cascaded-animation',
-                            animation: 'scale-up-animation',
-                            nodes: circlesArray
+                            name: 'reverse-ripple-animation',
+                            id: 'ripple',
+                            toPage: this
+                        }, {
+                            name: 'hero-animation',
+                            id: 'hero',
+                            toPage: this
                         }],
-
                         'exit': [{
+                            name: 'ripple-animation',
+                            id: 'ripple',
+                            fromPage: this
+                        }, {
                             name: 'hero-animation',
                             id: 'hero',
                             fromPage: this
-                        }, {
-                            name: 'cascaded-animation',
-                            animation: 'scale-down-animation'
                         }]
                     }
                 }
@@ -253,29 +246,22 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         },
 
         listeners: {
-            'click': '_onClick'
+            'yellow.tap': '_onTap',
+            'blue.tap': '_onTap',
+            'red.tap': '_onTap'
         },
 
-        _onClick: function(event) {
+        _onTap: function(event) {
             var target = event.target;
+
             if(target.classList.contains('circle')) {
                 // configure the page animation
                 this.sharedElements = {
-                    'hero': target
+                    'hero': target,
+                    'ripple': target
                 };
             }
 
-            var nodesToScale = [];
-            var circles = Polymer.dom(this.root).querySelectorAll('.circle');
-            for (var node, index = 0; node = circles[index]; index++) {
-                if (node !== event.target) {
-                    nodesToScale.push(node);
-                }
-
-            }
-
-            this.animationConfig['exit'][1].nodes = nodesToScale;
-            console.log(this.animationConfig);
             this.fire('circle-click');
         },
 
@@ -284,17 +270,19 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             this.listen(this.$.red, 'transitionend', 'changeFont');
 
             this.toggleClass('large-opaque-lift-north',true, this.$.red);
-            this.toggleClass('lift-north', true, this.$.red);
+            //this.toggleClass('lift-north', true, this.$.red);
 
             this.toggleClass('large-opaque-lift-west', true, this.$.blue);
-            this.toggleClass('lift-west', true, this.$.blue);
+            //this.toggleClass('lift-west', true, this.$.blue);
 
             this.toggleClass('large-opaque-lift-east', true, this.$.yellow);
-            this.toggleClass('lift-east', true, this.$.yellow);
+            //this.toggleClass('lift-east', true, this.$.yellow);
         },
 
         changeFont: function (e) {
-
+            this.toggleClass('full-north', false, this.$.red);
+            this.toggleClass('full-west', false, this.$.blue);
+            this.toggleClass('full-east', false, this.$.yellow);
 
             if (e.propertyName !== 'opacity') return;
 
