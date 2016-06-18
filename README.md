@@ -73,3 +73,5 @@ those components and their dependencies are added to the list of pre-cached
 components (and will have bundles created in the fallback `bundled` build).
 
 
+# polymer-cv
+A new version of my digital CV based on Polymer.
