@@ -20,6 +20,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 <link rel="import" href="cv-nav.html">
 <link rel="import" href="cv-contact.html">
+<link rel="import" href="cv-bio.html">
+<link rel="import" href="cv-tech.html">
 
 <dom-module id="cv-home">
   <template>
@@ -44,9 +46,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           data="{{routeData}}"
           tail="{{subroute}}"></app-route>
 
-    <neon-animated-pages id="pages" selected="[[page]]" attr-for-selected="name">
+    <neon-animated-pages id="pages" selected="{{page}}" attr-for-selected="name">
         <cv-nav name="nav" page="{{page}}"></cv-nav>
+        <cv-bio name="bio"></cv-bio>
         <cv-contact name="contact"></cv-contact>
+        <cv-tech name="tech"></cv-tech>
     </neon-animated-pages>
 
   </template>
@@ -57,7 +61,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     Polymer({
       is: 'cv-home',
         attached: function() {
-            this.importHref(this.resolveUrl('cv-contact.html'), null, null, true);
+            console.log('page', this.page);
         },
 
         properties: {
@@ -79,6 +83,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         _pageChanged: function(page) {
             // load page import on demand.
+            console.log('changed');
             this.importHref(
                 this.resolveUrl('cv-' + page + '.html'), null, null, true);
         }

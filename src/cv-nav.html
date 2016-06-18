@@ -37,11 +37,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
      .initials {
          text-align: center;
-         margin-top: -80px;
          margin-bottom: 0;
-         font-family: 'Orbitron', sans-serif;
-         font-size: 48px;
-         font-weight: 400;
+         padding-left: 8px;
      }
 
      .show {
@@ -54,25 +51,23 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
      }
 
      .circle {
+         position: absolute;
+         display: flex;
+         flex-direction: column;
+         align-items: center;
+         justify-content: center;
          box-sizing: border-box;
          opacity: 0.75;
-         width: 33px;
-         height: 33px;
-
-         transition: opacity 1s, transform 1s;
+         width: 66px;
+         height: 66px;
+         left: 50%;
+         top: 50%;
+         margin-left: -33px;
+         margin-top: -33px;
      }
 
-     .xcircle::after {
-         content: '';
-         position: absoulte;
-         z-index: -1;
-         width: 100%;
-         height: 100%;
-         border-radius: 50%;
-         opacity: 0;
-         display: none;
-         box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2);
-         transition: opacity 1s;
+     .transit {
+         transition: opacity 1s, top 1s, left 1s, transform 1s;
      }
 
      .pos-orbit {
@@ -80,84 +75,81 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
          transform-origin: 50% -50px -50px;
      }
 
-     .full-north {
-         transform: translateY(-150px);
-     }
-
-     .full-west {
-         transform: translateX(-150px);
-     }
-
-     .full-east {
-         transform: translateX(135px);
-     }
-
-     .large-opaque-lift-north {
-         opacity: 1;
-         transform: scale(1.75) translateY(-150px);
-         transform-origin: 50% -125px;
+     .delay-quart-s {
          transition-delay: 0.25s;
      }
 
-     .large-opaque-lift-west {
-         opacity: 1;
-         transform: scale(1.75) translateX(-150px);
-         transform-origin: -125px 50%;
-     }
-
-     .large-opaque-lift-east {
-         opacity: 1;
-         transform: scale(1.75) translateX(135px);
-         transform-origin: 135px 50%;
+     .delay-half-s {
          transition-delay: 0.5s;
-     }
-
-     .xlarge-opaque-lift-east::after {
-         opacity: 1;
-         display: block;
-         transition-delay: 1s;
      }
 
      .blue {
          background-color: #0064ff;
-         margin-bottom: -33px;
+     }
+
+     .west {
+         margin-top: -33px;
+         left: 0;
      }
 
      .yellow {
          background-color: #fac800;
      }
 
-     .red {
-         background-color: #ff3232;
-         margin-top: -33px;
+     .east {
+         right: 0;
+         left: 100%;
      }
 
-     .full {
+     .red {
+         background-color: #ff3232;
+     }
+
+
+     .north {
+         top: 0;
+         margin-left: -33px;
+     }
+
+     .opaque {
+         opacity: 1;
+     }
+
+     .small {
+         transform: scale(0.589);
+     }
+
+     :host {
          display: flex;
          flex-direction: column;
          align-items: center;
          justify-content: center;
-         position: absolute;
          background-color: white;
-         top: 0;
-         right: 0;
-         left: 0;
-         bottom: 0;
      }
+
+     .full {
+         position: relative;
+         display: flex;
+         flex-direction: column;
+         align-items: center;
+         justify-content: center;
+         background-color: white;
+         width: 66%;
+         height: 66vw;
+     }
+
 
     </style>
 
 
-    <div id="circleContainer" class="full">
-        <iron-selector selected="[[page]]" attr-for-selected="name" class="drawer-list" role="navigation">
-            <a href="/bio" name="bio"><paper-fab icon="face" title="Biography" class="circle blue" id="blue"></paper-fab></a>
-            <a href="/contact" name="contact"><paper-fab icon="mail" title="contact" id="yellow" class="circle yellow"></paper-fab></a>
-            <a href="/tech" name="tech"><paper-fab icon="hardware:computer" id="red" class="circle red"></paper-fab></a>
-        </iron-selector>
 
-        <h1 id="initials" class="title initials">A.B-W</h1>
-        <h1 id="loading" class="title loading">Loading</h1>
-    </div>
+        <iron-selector id="selector" class="full" selected="[[page]]" attr-for-selected="name" class="drawer-list" role="navigation">
+            <a href="/bio" name="bio" id="bio" class="circle transit small"><paper-fab icon="face" title="Biography" class="blue"></paper-fab></a>
+
+            <a href="/contact" name="contact" id="contact" class="circle transit small"><paper-fab icon="mail" title="contact" class="yellow"></paper-fab></a>
+            <a href="/tech" name="tech" id="tech" class="circle transit small"><paper-fab icon="hardware:computer" class="red"></paper-fab></a>
+            <h1 id="initials" class="title initials">A.B-W</h1>
+        </iron-selector>
 
 
   </template>
@@ -184,14 +176,19 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                ];
              */
 
-            this.listen(this.$.red, 'transitionend', 'liftEnlargeOpaque');
+            this.listen(this.$.tech, 'transitionend', 'liftEnlargeOpaque');
 
 
             this.async(function() {
-                //this.transform('translateY(-150px)', this.$.red);
-                this.toggleClass('full-north', true, this.$.red);
-                this.toggleClass('full-west', true, this.$.blue);
-                this.toggleClass('full-east', true, this.$.yellow);
+                var radius = (Math.min(this.$.selector.offsetHeight, this.$.selector.offsetWidth) / 2) - 33;
+                console.log('bom', radius);
+                //this.transform('translateX('+radius+'px)', this.$.contact);
+                //this.transform('translateX(-'+radius+'px)', this.$.bio);
+                //this.transform('translateY(-'+radius+'px)', this.$.tech);
+
+                this.toggleClass('north', true, this.$.tech);
+                this.toggleClass('west', true, this.$.bio);
+                this.toggleClass('east', true, this.$.contact);
             },200);
 
 
@@ -234,7 +231,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             fonts: {
                 type: Array,
                 value: [
-                    {family: "'Orbitron', sans-serif", weight: "400", size: "48px"}
+                    {family: "'Orbitron', sans-serif", weight: "400", size: "36px"}
                 ]
 
             },
@@ -242,47 +239,100 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             page: {
                 type: String,
                 notify: true
+            },
+
+            radius: {
+                type: Number,
+                value: 0
+            },
+
+            loadComplete: {
+                type: Boolean,
+                value: false
             }
         },
 
         listeners: {
-            'yellow.tap': '_onTap',
-            'blue.tap': '_onTap',
-            'red.tap': '_onTap'
+            'contact.tap': '_onTap',
+            'bio.tap': '_onTap',
+            'tech.tap': '_onTap',
+            'iron-select': '_updateSharedElements'
+        },
+
+        _updateSharedElements: function() {
+
+            if (this.loadComplete === false) {
+                this._skipLoad();
+            }
+            this.sharedElements = {
+                'hero': this.$[this.$.selector.selected],
+                'ripple': this.$[this.$.selector.selected]
+            }
         },
 
         _onTap: function(event) {
             var target = event.target;
 
-            if(target.classList.contains('circle')) {
-                // configure the page animation
-                this.sharedElements = {
-                    'hero': target,
-                    'ripple': target
-                };
-            }
+            this.sharedElements = {
+
+                'hero': target,
+                'ripple': target
+            };
 
             this.fire('circle-click');
         },
 
+        _skipLoad: function() {
+            this.loadComplete = true;
+
+            this.toggleClass('north', true, this.$.tech);
+            this.toggleClass('west', true, this.$.bio);
+            this.toggleClass('east', true, this.$.contact);
+
+            this.toggleClass('opaque',true, this.$.tech);
+            this.toggleClass('opaque',true, this.$.bio);
+            this.toggleClass('opaque',true, this.$.contact);
+
+            this.toggleClass('small',false, this.$.tech);
+            this.toggleClass('small',false, this.$.bio);
+            this.toggleClass('small',false, this.$.contact);
+
+        },
+
         liftEnlargeOpaque: function (e) {
-            this.unlisten(this.$.red, 'transitionend', 'liftEnlargeOpaque');
-            this.listen(this.$.red, 'transitionend', 'changeFont');
+            this.unlisten(this.$.tech, 'transitionend', 'liftEnlargeOpaque');
+            this.listen(this.$.tech, 'transitionend', 'changeFont');
 
-            this.toggleClass('large-opaque-lift-north',true, this.$.red);
-            //this.toggleClass('lift-north', true, this.$.red);
+            this.toggleClass('delay-quart-s', true, this.$.tech);
+            this.toggleClass('delay-half-s', true, this.$.contact);
 
-            this.toggleClass('large-opaque-lift-west', true, this.$.blue);
-            //this.toggleClass('lift-west', true, this.$.blue);
+            this.toggleClass('opaque',true, this.$.tech);
+            this.toggleClass('opaque',true, this.$.bio);
+            this.toggleClass('opaque',true, this.$.contact);
 
-            this.toggleClass('large-opaque-lift-east', true, this.$.yellow);
-            //this.toggleClass('lift-east', true, this.$.yellow);
+            this.toggleClass('small',false, this.$.tech);
+            this.toggleClass('small',false, this.$.bio);
+            this.toggleClass('small',false, this.$.contact);
         },
 
         changeFont: function (e) {
-            this.toggleClass('full-north', false, this.$.red);
-            this.toggleClass('full-west', false, this.$.blue);
-            this.toggleClass('full-east', false, this.$.yellow);
+            this.loadComplete = true;
+
+            this.toggleClass('transit', false, this.$.tech);
+            this.toggleClass('transit', false, this.$.bio);
+            this.toggleClass('transit', false, this.$.contact);
+
+            this.toggleClass('delay-quart-s', false, this.$.tech);
+            this.toggleClass('delay-half-s', false, this.$.contact);
+
+            //this.toggleClass('north-large-opaque', false, this.$.tech);
+            //this.toggleClass('north-final', true, this.$.tech);
+
+            //this.toggleClass('east-large-opaque', false, this.$.contact);
+            //this.toggleClass('east-final', true, this.$.contact);
+
+            //this.toggleClass('west-large-opaque', false, this.$.bio);
+            //this.toggleClass('west-final', true, this.$.bio);
 
             if (e.propertyName !== 'opacity') return;
 

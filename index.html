@@ -56,14 +56,15 @@
       text-align: center;
       font-family: 'Orbitron', sans-serif;
       font-size: 32px;
-      margin-top: 64px;
+       margin-top: 128px;
       transition: opacity 1s;
-      font-weight: 400;
+        font-weight: 400;
+        opacity: 0;
     }
 
     .initials {
       text-align: center;
-      margin-top: -80px;
+      margin-top: -91px;
       font-family: 'Orbitron', sans-serif;
       font-size: 48px;
       font-weight: 400;
@@ -78,19 +79,23 @@
       transition-delay: 2s;
     }
 
-    .circle {
-      box-sizing: border-box;
-      opacity: 0.75;
-      xbox-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
-      width: 33px;
-      height: 33px;
-      border-radius: 50%;
-      transition: opacity 1s, transform 1s;
+   .circle {
+       position: absolute;
+       box-sizing: border-box;
+       opacity: 0.75;
+       width: 33px;
+       height: 33px;
+       border-radius: 50%;
+       left: 50%;
+       top: 50%;
+       margin-left: -16px;
+       margin-top: -16px;
+
+        transition: opacity 1s, transform 1s;
     }
 
     .blue {
       background-color: #0064ff;
-      margin-bottom: -33px;
     }
 
     .load-west {
@@ -133,7 +138,6 @@
     }
     .red {
       background-color: #ff3232;
-      margin-top: -33px;
     }
 
     .load-north {
@@ -154,7 +158,18 @@
       }
     }
 
-    .full {
+   .full {
+       position: relative;
+       display: flex;
+       flex-direction: column;
+       align-items: center;
+       justify-content: center;
+       background-color: white;
+       width: 66%;
+       height: 66vw;
+   }
+
+    .container {
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -168,9 +183,8 @@
     }
 
     body {
-      xfont-family: 'Roboto', 'Noto', sans-serif;
-      xline-height: 1.5;
-      min-height: 100vh;
+      font-family: 'Roboto', 'Noto', sans-serif;
+      line-height: 1.5;
       background-color: #eee;
     }
 
@@ -179,12 +193,13 @@
 </head>
 <body>
 
-    <div id="circleContainer" class="full">
-        <div class="circle blue"></div>
-        <div class="circle yellow"></div>
-        <div class="circle red"></div>
-        <h1 class="title initials">A.B-W</h1>
-        <h1 class="title loading">Loading</h1>
+    <div class="container">
+        <div id="circleContainer" class="full">
+            <div class="circle blue"></div>
+            <div class="circle yellow"></div>
+            <div class="circle red"></div>
+            <div class="loading">Loading</div>
+        </div>
     </div>
 
     <script>
@@ -202,6 +217,8 @@
       };
 
      function animateLoading () {
+         if (window.quickLoad === true) return;
+
          // Delay the loading animation until human patience is
          // in danger
          if (performance.now() - loadStart < 900) {
@@ -209,8 +226,9 @@
              return;
          }
 
+
          //**** Loading Splash Screen transitions and animation ****//
-         //if (window.quickLoad) return;
+         if (window.quickLoad) return;
 
          window.quickLoad = false;
 
@@ -279,7 +297,7 @@
          function onImportLoaded() {
 
              if (window.quickLoad !== false) {
-                 //window.quickLoad = true;
+                 window.quickLoad = true;
                  swapSplashWithNav();
                  return;
              }
