@@ -1,0 +1,138 @@
+<!--
+     @license
+     Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+     This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+     The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+     The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+     Code distributed by Google as part of the polymer project is also
+     subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+   -->
+
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+
+<link rel="imort" href="../../../bower_components/iron-icons/iron-icons.html">
+
+<link rel="import" href="../../../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../../bower_components/paper-toolbar/paper-toolbar.html">
+<link rel="import" href="../../../bower_components/paper-card/paper-card.html">
+<link rel="import" href="../../../bower_components/paper-button/paper-button.html">
+
+<link rel="import" href="../../../bower_components/neon-animation/neon-shared-element-animatable-behavior.html">
+
+<link rel="import" href="../../../bower_components/marked-element/marked-element.html">
+
+<link rel="import" href="../../../bower_components/neon-animation/animations/scale-up-animation.html">
+<link rel="import" href="../../../bower_components/neon-animation/animations/fade-out-animation.html">
+<link rel="import" href="../../../bower_components/neon-animation/animations/ripple-animation.html">
+<link rel="import" href="../../../bower_components/neon-animation/animations/reverse-ripple-animation.html">
+
+<dom-module id="cv-grid">
+    <template>
+
+        <style>
+         :host {
+             @apply(--layout-wrap);
+             @apply(--layout-horizontal);
+             @apply(--layout-center-justified);
+             @apply(--layout-scroll);
+             height: 93vh;
+         }
+
+         .card {
+             width: 300px;
+             height: 400px;
+             margin: 5px 5px;
+             overflow: hidden;
+
+         }
+
+        </style>
+        <content></content>
+
+    </template>
+    <script>
+     (function() {
+         'use strict';
+
+         Polymer({
+             is: 'cv-grid',
+
+             behaviors: [
+                 Polymer.NeonSharedElementAnimatableBehavior
+             ],
+
+             properties: {
+                 animationConfig: {
+                     type: Object,
+                     value: function() {
+                         return {
+                             'entry': [{
+                                 name: 'hero-animation',
+                                 id: 'hero',
+                                 toPage: this
+                             }],
+                             'exit': [{
+                                 name: 'fade-out-animation',
+                                 node: this
+                             },{
+                                 name: 'hero-animation',
+                                 id: 'hero',
+                                 fromPage: this
+                             }]
+                         }
+                     }
+                 },
+
+                 heroKey: {
+                     type: String
+                 }
+
+             },
+
+             listeners: {
+                 'dom-change': '_response',
+                 'tap': 'view'
+             },
+
+             _response: function(event) {
+                 if (this.heroKey) {
+                     var el = this.updateHero();
+                     el.scrollIntoViewIfNeeded();
+                 }
+
+             },
+
+             view: function(event) {
+                 var target = event.target;
+
+                 while (target !== this && !target._templateInstance) {
+                     target = target.parentNode;
+                 }
+
+                 this.sharedElements = {
+                     'hero': target,
+                     'ripple': this
+                 };
+
+                 this.animationConfig['exit'][0].gesture = {
+                     x: event.x || event.pageX,
+                     y: event.y || event.pageY
+                 };
+
+                 this.animationConfig['exit'][1].node = target;
+
+             },
+
+             updateHero: function(id) {
+                 if (id) this.heroKey = id;
+
+                 var el = this.queryEffectiveChildren('[id=' + this.heroKey + ']');
+                 this.sharedElements.hero = el;
+                 return el;
+             }
+
+
+         });
+     })();
+    </script>
+</dom-module>

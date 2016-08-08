@@ -1,0 +1,362 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../../../bower_components/iron-selector/iron-selector.html">
+<link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../../bower_components/iron-icons/hardware-icons.html">
+<link rel="import" href="../../../bower_components/iron-icons/iron-icons.html">
+
+<link rel="import" href="../../../bower_components/paper-fab/paper-fab.html">
+
+<link rel="import" href="../../../bower_components/neon-animation/neon-shared-element-animatable-behavior.html">
+
+<dom-module id="cv-nav">
+  <template>
+    <style>
+     .title {
+         opacity: 0;
+         transition: opacity 2s;
+     }
+
+     .loading {
+         text-align: center;
+         font-family: 'Orbitron', sans-serif;
+         font-size: 32px;
+         margin-top: 64px;
+         margin-bottom: 0;
+         transition: opacity 1s;
+         font-weight: 400;
+     }
+
+     .initials {
+         text-align: center;
+         margin-bottom: 0;
+         padding-left: 8px;
+     }
+
+     .show {
+         opacity: 1;
+     }
+
+     .fade {
+         opacity: 0;
+         transition-delay: 2s;
+     }
+
+     .circle {
+         position: absolute;
+         display: flex;
+         flex-direction: column;
+         align-items: center;
+         justify-content: center;
+         box-sizing: border-box;
+         opacity: 0.75;
+         width: 66px;
+         height: 66px;
+         left: 50%;
+         top: 50%;
+         margin-left: -33px;
+         margin-top: -33px;
+     }
+
+     .transit {
+         transition: opacity 1s, top 1s, left 1s, transform 1s;
+     }
+
+     .pos-orbit {
+         transform: rotateZ(360deg) translateY(-33%);
+         transform-origin: 50% -50px -50px;
+     }
+
+     .delay-quart-s {
+         transition-delay: 0.25s;
+     }
+
+     .delay-half-s {
+         transition-delay: 0.5s;
+     }
+
+     .blue {
+         background-color: #0064ff;
+     }
+
+     .west {
+         margin-top: -33px;
+         left: 0;
+     }
+
+     .yellow {
+         background-color: #fac800;
+     }
+
+     .east {
+         right: 0;
+         left: 100%;
+     }
+
+     .red {
+         background-color: #ff3232;
+     }
+
+
+     .north {
+         top: 0;
+         margin-left: -33px;
+     }
+
+     .opaque {
+         opacity: 1;
+     }
+
+     .small {
+         transform: scale(0.589);
+     }
+
+     :host {
+         display: flex;
+         flex-direction: column;
+         align-items: center;
+         justify-content: center;
+         background-color: white;
+     }
+
+     .full {
+         position: relative;
+         display: flex;
+         flex-direction: column;
+         align-items: center;
+         justify-content: center;
+         background-color: white;
+         width: 66%;
+         height: 66vw;
+     }
+
+
+    </style>
+
+
+
+        <iron-selector id="selector" class="full" selected="[[page]]" attr-for-selected="name" class="drawer-list" role="navigation">
+            <a href="/bio" name="bio" id="bio" class="circle transit small"><paper-fab icon="face" title="Biography" class="blue"></paper-fab></a>
+
+            <a href="/contact" name="contact" id="contact" class="circle transit small"><paper-fab icon="mail" title="contact" class="yellow"></paper-fab></a>
+            <a href="/tech" name="tech" id="tech" class="circle transit small"><paper-fab icon="hardware:computer" class="red"></paper-fab></a>
+            <h1 id="initials" class="title initials">A.B-W</h1>
+        </iron-selector>
+
+
+  </template>
+  <script>
+  (function() {
+    'use strict';
+
+    Polymer({
+      is: 'cv-nav',
+
+        attached: function() {
+
+            /* var fonts = [
+               {family: "'Lobster Two', cursive", weight: "400", size: "48px"},
+               {family: "'Russo One', sans-serif", weight: "400", size: "48px"},
+               {family: "'Courgette', cursive", weight: "400", size: "48px"},
+               {family: "'Rock Salt', cursive", weight: "400", size: "48px"},
+               {family: "'Special Elite', cursive", weight: "400", size:"48px"},
+               {family: "'Ceviche One', cursive", weight: "400", size: "48px"},
+               {family: "'Alex Brush', cursive", weight: "400", size: "48px"},
+               {family: "'Press Start 2P', cursive", weight: "400", size: "48px"},
+               {family: "'Cabin Sketch', cursive", weight: "400", size: "48px"},
+               {family: "'Orbitron', sans-serif", weight: "400", size: "48px"}
+               ];
+             */
+
+            this.listen(this.$.tech, 'transitionend', 'liftEnlargeOpaque');
+
+
+            this.async(function() {
+                var radius = (Math.min(this.$.selector.offsetHeight, this.$.selector.offsetWidth) / 2) - 33;
+                //this.transform('translateX('+radius+'px)', this.$.contact);
+                //this.transform('translateX(-'+radius+'px)', this.$.bio);
+                //this.transform('translateY(-'+radius+'px)', this.$.tech);
+
+                this.toggleClass('north', true, this.$.tech);
+                this.toggleClass('west', true, this.$.bio);
+                this.toggleClass('east', true, this.$.contact);
+            },200);
+
+
+            var i = 0;
+
+        },
+
+        behaviors: [
+            Polymer.NeonSharedElementAnimatableBehavior
+        ],
+
+
+        properties: {
+
+            animationConfig: {
+                value: function() {
+                    return {
+                        'entry': [{
+                            name: 'reverse-ripple-animation',
+                            id: 'ripple',
+                            toPage: this
+                        }, {
+                            name: 'hero-animation',
+                            id: 'hero',
+                            toPage: this
+                        }],
+                        'exit': [{
+                            name: 'ripple-animation',
+                            id: 'ripple',
+                            fromPage: this
+                        }, {
+                            name: 'hero-animation',
+                            id: 'hero',
+                            fromPage: this
+                        }]
+                    }
+                }
+            },
+
+            fonts: {
+                type: Array,
+                value: [
+                    {family: "'Orbitron', sans-serif", weight: "400", size: "36px"}
+                ]
+
+            },
+
+            page: {
+                type: String,
+                notify: true
+            },
+
+            radius: {
+                type: Number,
+                value: 0
+            },
+
+            loadComplete: {
+                type: Boolean,
+                value: false
+            }
+        },
+
+        listeners: {
+            'contact.tap': '_onTap',
+            'bio.tap': '_onTap',
+            'tech.tap': '_onTap',
+            'iron-select': '_updateSharedElements'
+        },
+
+        _updateSharedElements: function() {
+
+            if (this.loadComplete === false) {
+                this._skipLoad();
+            }
+            this.sharedElements = {
+                'hero': this.$[this.$.selector.selected],
+                'ripple': this.$[this.$.selector.selected]
+            }
+        },
+
+        _onTap: function(event) {
+            var target = event.target;
+
+            this.sharedElements = {
+
+                'hero': target,
+                'ripple': target
+            };
+
+            this.fire('circle-click');
+        },
+
+        _skipLoad: function() {
+            this.loadComplete = true;
+
+            this.toggleClass('north', true, this.$.tech);
+            this.toggleClass('west', true, this.$.bio);
+            this.toggleClass('east', true, this.$.contact);
+
+            this.toggleClass('opaque',true, this.$.tech);
+            this.toggleClass('opaque',true, this.$.bio);
+            this.toggleClass('opaque',true, this.$.contact);
+
+            this.toggleClass('small',false, this.$.tech);
+            this.toggleClass('small',false, this.$.bio);
+            this.toggleClass('small',false, this.$.contact);
+
+        },
+
+        liftEnlargeOpaque: function (e) {
+            this.unlisten(this.$.tech, 'transitionend', 'liftEnlargeOpaque');
+            this.listen(this.$.tech, 'transitionend', 'changeFont');
+
+            this.toggleClass('delay-quart-s', true, this.$.tech);
+            this.toggleClass('delay-half-s', true, this.$.contact);
+
+            this.toggleClass('opaque',true, this.$.tech);
+            this.toggleClass('opaque',true, this.$.bio);
+            this.toggleClass('opaque',true, this.$.contact);
+
+            this.toggleClass('small',false, this.$.tech);
+            this.toggleClass('small',false, this.$.bio);
+            this.toggleClass('small',false, this.$.contact);
+        },
+
+        changeFont: function (e) {
+            this.loadComplete = true;
+
+            this.toggleClass('transit', false, this.$.tech);
+            this.toggleClass('transit', false, this.$.bio);
+            this.toggleClass('transit', false, this.$.contact);
+
+            this.toggleClass('delay-quart-s', false, this.$.tech);
+            this.toggleClass('delay-half-s', false, this.$.contact);
+
+            //this.toggleClass('north-large-opaque', false, this.$.tech);
+            //this.toggleClass('north-final', true, this.$.tech);
+
+            //this.toggleClass('east-large-opaque', false, this.$.contact);
+            //this.toggleClass('east-final', true, this.$.contact);
+
+            //this.toggleClass('west-large-opaque', false, this.$.bio);
+            //this.toggleClass('west-final', true, this.$.bio);
+
+            if (e.propertyName !== 'opacity') return;
+
+            this.unlisten(this.$.red, 'transitionend', 'changeFont');
+            //title.addEventListener("transitionend", changeFont, true);
+
+            if (this.$.initials.classList.contains('show')) {
+                this.toggleClass('fade', true, this.$.initials);
+                this.toggleClass('show', false, this.$.initials);
+
+
+            } else {
+
+                this.$.initials.style["fontFamily"] = this.fonts[0].family;
+                this.$.initials.style["fontWeight"] = this.fonts[0].weight;
+                this.$.initials.style["fontSize"] = this.fonts[0].size;
+
+
+                this.toggleClass('fade', false, this.$.initials);
+                this.toggleClass('show', true, this.$.initials);
+            }
+
+        }
+
+    });
+  })();
+  </script>
+</dom-module>

@@ -1,0 +1,150 @@
+<!--
+     @license
+     Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+     This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+     The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+     The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+     Code distributed by Google as part of the polymer project is also
+     subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+   -->
+
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+
+<link rel="import" href="../../../bower_components/app-layout/app-header/app-header.html">
+<link rel="import" href="../../../bower_components/app-layout/app-header-layout/app-header-layout.html">
+<link rel="import" href="../../../bower_components/app-layout/app-toolbar/app-toolbar.html">
+
+<link rel="import" href="../../../bower_components/iron-ajax/iron-ajax.html">
+<link rel="imort" href="../../../bower_components/iron-icons/iron-icons.html">
+
+<link rel="import" href="../../../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../../../bower_components/paper-icon-button/paper-icon-button.html">
+
+<link rel="import" href="../../../bower_components/neon-animation/neon-shared-element-animatable-behavior.html">
+<link rel="import" href="../../../bower_components/neon-animation/animations/scale-up-animation.html">
+<link rel="import" href="../../../bower_components/neon-animation/animations/fade-out-animation.html">
+<link rel="import" href="../../../bower_components/neon-animation/animations/ripple-animation.html">
+<link rel="import" href="../../../bower_components/neon-animation/animations/reverse-ripple-animation.html">
+
+<link rel="import" href="../../behaviours/cv-section.html">
+<link rel="import" href="../../behaviours/cv-list-detail.html">
+
+<link rel="import" href="../cv-grid/cv-grid.html">
+<link rel="import" href="../cv-job/cv-job.html">
+
+<dom-module id="cv-bio">
+  <template>
+
+    <style>
+      :host {
+        display: block;
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+      }
+
+      .header {
+        background-color: #0064ff;
+      }
+
+      #fixed {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        width: 100vw;
+        background-color: #4484cc;
+      }
+      .content {
+        margin: 0px auto;
+      }
+
+      .intro {
+        min-width: 300px;
+        max-width: 610px;
+        height: 400px;
+        margin: 5px 5px;
+        overflow: hidden;
+        float: left;
+      }
+
+      .card {
+        width: 300px;
+        height: 400px;
+        margin: 5px 5px;
+        overflow: hidden;
+      }
+      /* Breakpoints */
+
+      /* Small */
+      @media (max-width: 600px) {
+
+      }
+
+      /* Tablet+ */
+      @media (min-width: 601px) {
+
+      }
+    </style>
+    <app-route
+        route="{{route}}"
+        pattern="/bio/:id"
+        data="{{routeData}}"
+        tail="{{subroute}}"></app-route>
+
+    <iron-ajax id="jobs" auto
+               url="https://cv-service.appspot.com/jobs"
+               handle-as="json"
+               last-response="{{ajaxResponse}}"
+               verbose
+    ></iron-ajax>
+
+    <div id="fixed"></div>
+
+    <app-header id="hero" class="header">
+      <app-toolbar>
+        <paper-icon-button on-click="_back" icon="arrow-back" drawer-toggle></paper-icon-button>
+        <div title>Biography</div>
+      </app-toolbar>
+    </app-header>
+
+    <neon-animated-pages id="content" selected="0">
+      <cv-grid id="grid">
+        <paper-card id="about" class="intro static" heading="Alex Bransby-Williams" image="">
+          <div class="card-content">
+            <p>I'm a full stack software developer who has been producing web based services and applications since 1999. I'm currently contracting while keeping an eye out for the right permanent position and looking at possible ideas for a startup.</p>
+            <p>The rest of this section shows my job history. You can also see <a href="/tech">a list of my technical skills</a> and if you like what you see or have any questions <a href="/contact">get in touch</a>.</p>
+          </div>
+        </paper-card>
+
+        <template id="domRepeat" is="dom-repeat" items="[[ajaxResponse]]">
+          <cv-job id="[[item.key]]" size="small" model="[[item]]" class="card">
+            <div class="card-actions">
+              <a href="/bio/[[item.key]]"><paper-button>More</paper-button></a>
+            </div>
+          </cv-job>
+        </template>
+
+      </cv-grid>
+      <cv-job id="detail"></cv-job>
+    </neon-animated-pages>
+
+  </template>
+  <script>
+    (function() {
+      'use strict';
+
+      Polymer({
+        is: 'cv-bio',
+
+        behaviors: [
+          CvBehaviors.SectionBehavior,
+          CvBehaviors.ListDetailBehaviour
+        ]
+
+      });
+    })();
+  </script>
+</dom-module>

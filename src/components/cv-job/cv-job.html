@@ -1,0 +1,254 @@
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+
+<link rel="import" href="../../../bower_components/iron-ajax/iron-ajax.html">
+<link rel="imort" href="../../../bower_components/iron-icons/iron-icons.html">
+
+<link rel="import" href="../../../bower_components/paper-material/paper-material.html">
+
+<link rel="import" href="../../../bower_components/marked-element/marked-element.html">
+
+
+<link rel="import" href="../../../bower_components/neon-animation/animations/scale-up-animation.html">
+<link rel="import" href="../../../bower_components/neon-animation/animations/ripple-animation.html">
+<link rel="import" href="../../../bower_components/neon-animation/animations/reverse-ripple-animation.html">
+
+<dom-module id="cv-job">
+  <template>
+    <style>
+      :host {
+        display: block;
+        @apply(--layout-scroll);
+        height: 93vh;
+      }
+
+      .small {
+        width: 300px;
+        height: 400px;
+      }
+
+      paper-card {
+        transition: width 1s, height 1s;
+        display: block;
+        min-width: 300px;
+        max-width: 700px;
+        width: 90%;
+        margin: 3px auto;
+        margin-bottom: 9px;
+      }
+
+      .techs {
+        padding: 0;
+        margin: 0;
+      }
+
+      .small > .card-content > .techs {
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        overflow: hidden;
+
+        padding: 0;
+        margin: 0;
+      }
+
+      .techs > li {
+        display: inline;
+      }
+
+      li::after {
+        content: ", ";
+      }
+
+      .small > .card-content {
+        height: 300px;
+        overflow: hidden;
+      }
+
+      .company {
+        @apply(--paper-font-headline);
+      }
+
+      .role {
+        @apply(--paper-font-title);
+      }
+
+      .dates {
+        @apply(--paper-font-subhead);
+      }
+
+    </style>
+    <iron-ajax id="jobData"
+               url="https://cv-service.appspot.com/jobs/[[key]]"
+               handle-as="json"
+               last-response="{{ajaxResponse}}"
+               verbose
+    ></iron-ajax>
+    <paper-card id="card" class="[[size]]">
+      <div class="card-content">
+        <div class="company">[[company]]</div>
+        <div class="role">[[role]]</div>
+        <div class="dates">[[startedMonthYear]] &hyphen; [[endedMonthYear]]</div>
+        <ul class="techs dates">
+          <template id="domRepeat" is="dom-repeat" items="[[techs]]"><li>[[item]]</li></template>
+        </ul>
+
+        <marked-element id="description" markdown="[[description]]" class="[[size]]" smartypants">
+          <div class="markdown-html"></div>
+        </marked-element>
+        <ul>
+          <template id="domRepeat" is="dom-repeat" items="achievements">[[item]]</template>
+        </ul>
+      </div>
+      <content></content>
+    </paper-card>
+
+  </template>
+  <script>
+  (function() {
+    'use strict';
+
+    Polymer({
+      is: 'cv-job',
+      behaviors: [
+        Polymer.NeonAnimationRunnerBehavior
+        //Polymer.NeonSharedElementAnimatableBehavior
+      ],
+
+      listeners: {
+        'response': 'updateModelFromAjax'
+      },
+
+      properties: {
+        key: {
+          type: String
+        },
+
+        model: {
+          type: Object,
+          observer: "_updatePropertiesFromModel"
+        },
+
+        key: {
+          type: String
+        },
+
+        company: {
+          type: String
+        },
+
+        role: {
+          type: String
+        },
+
+        description: {
+          type: String
+        },
+
+        achievements: {
+          type: Array
+        },
+
+        started: {
+          type: String
+        },
+
+        startedMonthYear: {
+          type: String,
+          computed: 'formatDateToMonthYear(started)'
+        },
+
+        ended: {
+          type: String
+        },
+
+        endedMonthYear: {
+          type: String,
+          computed: 'formatDateToMonthYear(ended)'
+        },
+
+        techs: {
+          type: Array
+        },
+
+        url: {
+          type: String
+        },
+
+        logo: {
+          type: String
+        },
+
+        size: {
+          type: String,
+          value: "full",
+          observer: 'doIt'
+        },
+
+        animationConfig: {
+          value: function() {
+            return {
+              'entry': [{
+                name: 'hero-animation',
+                id: 'hero',
+                toPage: this
+              }],
+              'exit': [{
+                name: 'hero-animation',
+                id: 'hero',
+                fromPage: this
+              }]
+            };
+          }
+        },
+
+        sharedElements: {
+          type: Object,
+          value: function() {
+            return {
+              'hero': this.$.card
+            }
+          }
+        }
+      },
+
+      doIt() {
+        this.$.card.toggleClass(this.size);
+      },
+
+      makeRequest: function() {
+        this.$.jobData.generateRequest();
+      },
+
+      _updatePropertiesFromModel(model) {
+        for (var prop in model) {
+          this[prop] = model[prop];
+        }
+
+        this.fire('detail-updated', this.key);
+      },
+
+      updateModelFromAjax(event, request) {
+        this.model = request.response;
+      },
+
+      formatDateToMonthYear(dateString) {
+        var splitDate = dateString.split('-');
+        return splitDate[1] + '.' + splitDate[0];
+      },
+
+      truncate: function(text, length) {
+        var index = text.search('</p>');
+        if (index <= length) {
+          return text.substr(0, index + 4);
+        }
+
+        while (text[length] !== ' '){
+          length -= 1;
+        }
+
+        return text.substr(0, length) + "&hellip;</p>";
+      }
+
+    });
+  })();
+  </script>
+</dom-module>

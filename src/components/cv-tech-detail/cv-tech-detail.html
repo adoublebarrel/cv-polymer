@@ -1,0 +1,268 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+
+<link rel="import" href="../../../bower_components/iron-ajax/iron-ajax.html">
+<link rel="imort" href="../../../bower_components/iron-icons/iron-icons.html">
+
+<link rel="import" href="../../../bower_components/paper-material/paper-material.html">
+
+<link rel="import" href="../../../bower_components/marked-element/marked-element.html">
+
+
+<link rel="import" href="../../../bower_components/neon-animation/animations/scale-up-animation.html">
+<link rel="import" href="../../../bower_components/neon-animation/animations/ripple-animation.html">
+<link rel="import" href="../../../bower_components/neon-animation/animations/reverse-ripple-animation.html">
+
+<dom-module id="cv-tech-detail">
+  <template>
+    <style>
+      :host {
+          display: block;
+          @apply(--layout-scroll);
+          height: 93vh;
+      }
+
+     .small {
+       width: 300px;
+       height: 400px;
+
+     }
+
+     paper-card {
+         transition: width 1s, height 1s;
+         display: block;
+         min-width: 300px;
+         max-width: 700px;
+         width: 90%;
+         margin: 3px auto;
+         margin-bottom: 9px;
+     }
+
+     .small marked-element {
+         display: block;
+         overflow: hidden;
+     }
+
+     .years {
+         float: right;
+         font-size: 15px;
+         vertical-align: middle;
+     }
+
+     .fresh-annotation {
+         font-size: 13px;
+         padding-left: 70px;
+
+     }
+
+    </style>
+    <iron-ajax id="techData"
+               url="https://cv-service.appspot.com/techs/[[key]]"
+               handle-as="json"
+               last-response="{{ajaxResponse}}"
+               verbose
+    ></iron-ajax>
+
+    <paper-card id="card" heading="[[name]]" image="/images/test4.png" fadeImage preloadImage>
+        <div class="card-content">
+            <div class="years">Years: [[years]]</div>
+            <div class="fresh-rating">
+                <iron-icon class="star" icon="[[freshIconOne]]"></iron-icon>
+                <iron-icon class="star" icon="[[freshIconTwo]]"></iron-icon>
+                <iron-icon class="star" icon="[[freshIconThree]]"></iron-icon>
+                <iron-icon class="star" icon="[[freshIconFour]]"></iron-icon>
+                <iron-icon class="star" icon="[[freshIconFive]]"></iron-icon>
+            </div>
+
+
+            <marked-element id="description" markdown="[[description]]" smartypants">
+                <div class="markdown-html"></div>
+            </marked-element>
+        </div>
+        <content></content>
+    </paper-card>
+
+  </template>
+  <script>
+  (function() {
+    'use strict';
+
+    Polymer({
+      is: 'cv-tech-detail',
+
+      attached: function() {
+          var lineHeight = this.$.description.getComputedStyleValue('line-height');
+          var value = lineHeight.slice(0, -2);
+          var units = lineHeight.slice(-2);
+          value *= 4;
+          // add top margin
+          value += 16;
+          this.$.description.setAttribute("style", "height: " + value + units);
+
+          this.$.card.toggleClass(this.size);
+      },
+
+        behaviors: [
+            Polymer.NeonAnimationRunnerBehavior
+            //Polymer.NeonSharedElementAnimatableBehavior
+        ],
+
+        listeners: {
+            'response': 'updateModelFromAjax'
+        },
+
+      properties: {
+        key: {
+            type: String
+        },
+
+        model: {
+          type: Object,
+          observer: "_updatePropertiesFromModel"
+        },
+
+        name: {
+          type: String
+        },
+
+        months: {
+          type: Number
+        },
+
+        description: {
+            type: String
+        },
+
+        tags: {
+            type: Array
+        },
+
+        freshness: {
+            type: Number
+        },
+
+        complement: {
+            type: Array
+        },
+
+        exercised: {
+            type: String
+        },
+
+        years: {
+            type: Number,
+            computed: 'monthsToYears(months)'
+        },
+
+        freshIconOne: {
+          type: String,
+          computed: 'whichIcon(1, months, freshness)'
+        },
+
+        freshIconTwo: {
+          type: String,
+          computed: 'whichIcon(2, months, freshness)'
+        },
+
+        freshIconThree: {
+          type: String,
+          computed: 'whichIcon(3, months, freshness)'
+        },
+
+        freshIconFour: {
+            type: String,
+            computed: 'whichIcon(4, months, freshness)'
+        },
+
+        freshIconFive: {
+          type: String,
+          computed: 'whichIcon(5, months, freshness)'
+        },
+
+        size: {
+            type: String,
+            value: "full"
+        },
+
+        animationConfig: {
+          value: function() {
+            return {
+              'entry': [{
+                name: 'hero-animation',
+                id: 'hero',
+                toPage: this
+              }],
+              'exit': [{
+                name: 'hero-animation',
+                id: 'hero',
+                fromPage: this
+              }]
+            };
+          }
+        },
+
+        sharedElements: {
+          type: Object,
+          value: function() {
+            return {
+              'hero': this.$.card
+            }
+          }
+        }
+      },
+
+      makeRequest: function() {
+        this.$.techData.generateRequest();
+      },
+
+      _updatePropertiesFromModel(model) {
+        for (var prop in model) {
+          this[prop] = model[prop];
+        }
+
+        this.fire('detail-updated', this.key);
+      },
+
+      updateModelFromAjax(event, request) {
+        this.model = request.response;
+      },
+
+      truncate: function(text, length) {
+        var index = text.search('</p>');
+        if (index <= length) {
+          return text.substr(0, index + 4);
+        }
+
+        while (text[length] !== ' '){
+          length -= 1;
+        }
+
+        return text.substr(0, length) + "&hellip;</p>";
+      },
+
+      monthsToYears: function(months) {
+        return this.months / 12;
+      },
+
+      whichIcon: function(pos, months, freshness) {
+        var rating = (freshness) * 5;
+
+        if (rating >= pos) return 'star';
+        if (rating + 0.5 >= pos) return 'star-half';
+
+        return 'star-border';
+      }
+
+    });
+  })();
+  </script>
+</dom-module>

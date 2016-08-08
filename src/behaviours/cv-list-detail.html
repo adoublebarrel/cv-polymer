@@ -1,0 +1,72 @@
+<script>
+  window.CvBehaviors = window.CvBehaviors || {};
+
+  ListDetailBehaviourImpl = {
+    observers: [
+      '_routeChanged(routeData)'
+    ],
+
+    listeners: {
+      'detail-updated': 'updateGridHero'
+
+    },
+
+    properties: {
+      id: {
+        type: String
+      },
+
+      route: {
+        type: Object
+      },
+
+      routeData: {
+        type: Object,
+        notify: true
+      }
+
+    },
+
+    updateGridHero: function(event, id) {
+      this.$.grid.updateHero(id);
+    },
+
+    view: function(event) {
+      this.$.detail.model = event.detail.data;
+    },
+
+    _routeChanged: function(data) {
+      if (data.id) {
+        var el = this.$$("[id=" + data.id + "]");
+
+        if (el) {
+          this.$.detail.model = el.model;
+        } else {
+          this.$.detail.key = data.id;
+          this.$.detail.makeRequest();
+        }
+
+        // Override display none
+        this.$.grid.setAttribute("style", "visibility: collapse; display: flex !important;");
+        this.$.content.selected = 1;
+      } else {
+        this.$.content.selected = 0;
+        this.$.grid.setAttribute("style", "");
+
+      }
+    },
+
+    _back: function(event) {
+
+      if (this.routeData.id) {
+        this.routeData = {};
+        window.history.back();
+      } else {
+        this.fire('nav-out');
+      }
+    }
+
+  }
+
+  CvBehaviors.ListDetailBehaviour = [ ListDetailBehaviourImpl ];
+</script>

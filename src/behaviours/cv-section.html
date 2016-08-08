@@ -1,0 +1,61 @@
+<script>
+  window.CvBehaviors = window.CvBehaviors || {};
+
+  SectionBehaviorImpl = {
+
+    properties: {
+      animationConfig: {
+        value: function() {
+          return {
+            'entry': [{
+              name: 'fade-out-animation',
+              id: 'ripple',
+              toPage: this
+            },{
+              name: 'hero-animation',
+              id: 'hero',
+              toPage: this,
+              timing: {
+                delay: 0
+              }
+            },{
+              name: 'fade-in-animation',
+              node: this.$.content,
+              timing: {
+                delay: 300
+              }
+            }],
+            'exit': [{
+              name: 'fade-out-animation',
+              node: this.$.content
+            },{
+              name: 'fade-out-animation',
+              node: this.$.fixed
+            },{
+              name: 'reverse-ripple-animation',
+              id: 'ripple',
+              fromPage: this
+            },{
+              name: 'hero-animation',
+              id: 'hero',
+              fromPage: this
+            }]
+          };
+        }
+      },
+
+      sharedElements: {
+        type: Object,
+        value: function() {
+          return {
+            'hero': this.$.hero,
+            'ripple': this.$.fixed
+          }
+        }
+      }
+
+    }
+  }
+
+  CvBehaviors.SectionBehavior = [Polymer.NeonSharedElementAnimatableBehavior, SectionBehaviorImpl];
+</script>
