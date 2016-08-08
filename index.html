@@ -26,7 +26,7 @@
 
   </script>
 
-  <link id="home" rel="import" href="/src/cv-home.html" async>
+  <link id="home" rel="import" href="/src/components/cv-home/cv-home.html" async>
 
   <style>
     /* http://meyerweb.com/eric/tools/css/reset/
@@ -288,10 +288,8 @@
 
          if (link.import && link.import.readyState === 'complete') {
              onImportLoaded();
-             console.log('straight through');
          } else {
              link.addEventListener('load', onImportLoaded);
-             console.log('waiting for load event');
          }
 
          function onImportLoaded() {

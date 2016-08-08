@@ -1,8 +1,9 @@
 {
   "entrypoint": "index.html",
-  "shell": "src/cv-home.html",
+  "shell": "src/components/cv-home/cv-home.html",
   "fragments": [
-    "src/cv-nav.html",
-    "src/cv-contact.html"
+    "src/components/cv-nav/cv-nav.html",
+    "src/components/cv-contact/cv-contact.html",
+    "src/components/cv-tech/cv-tech.html"
   ]
 }
